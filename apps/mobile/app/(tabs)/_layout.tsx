@@ -1,11 +1,12 @@
 import { Tabs } from 'expo-router';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 import { Navbar } from '../../core/components/Navbar';
 
 export default function TabsLayout() {
   return (
     <Tabs
-      tabBar={(props) => <Navbar {...props} />}
+      tabBar={(props: BottomTabBarProps) => <Navbar {...props} />}
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" options={{ title: 'Feed' }} />
