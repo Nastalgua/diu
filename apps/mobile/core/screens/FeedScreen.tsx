@@ -1,15 +1,14 @@
-import React from 'react';
 import { View } from 'react-native';
 
-import { DiuText } from '../components/text/Text';
+import FeedCardItem from '@/core/components/feed-card/FeedCardItem';
+import { cards } from '@/core/components/feed-card/fake-data';
 
 export function FeedScreen() {
   return (
-    <View className="flex-1 items-center justify-center bg-bg">
-      <DiuText variant="pageTitle">Feed</DiuText>
-      <DiuText variant="bodySm" className="mt-2">
-        You are on the Feed screen
-      </DiuText>
+    <View className="bg-bg flex-1">
+      {cards.map((card) => (
+        <FeedCardItem key={card.id} card={card} />
+      ))}
     </View>
   );
 }

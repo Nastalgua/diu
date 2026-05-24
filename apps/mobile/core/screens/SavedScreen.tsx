@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 
-import { DiuText } from '../components/text/Text';
+import { DiuText } from '@/core/components/text/Text';
 
 export function SavedScreen() {
   return (

@@ -14,18 +14,19 @@ type Variant =
   | 'bodySm'
   | 'label'
   | 'overline'
-  | 'micro';
+  | 'micro'
+  | 'energyPill';
 
 const variantClass: Record<Variant, string> = {
-  pageTitle: 'font-medium text-page-title   text-primary',
+  pageTitle: 'font-medium text-page-title text-primary',
   sectionHead: 'font-medium text-section-head text-primary',
-  cardTitle: 'font-medium text-card-title   text-primary',
-  body: 'font-sans   text-body         text-primary',
-  bodySm: 'font-sans   text-body-sm      text-muted',
-  label: 'font-medium text-label        text-primary',
-  overline:
-    'font-medium text-overline     text-muted   uppercase tracking-overline',
-  micro: 'font-sans   text-micro        text-hint',
+  cardTitle: 'font-medium text-card-title text-primary',
+  body: 'font-sans text-muted',
+  bodySm: 'font-sans text-body-sm text-muted',
+  label: 'font-medium text-label text-primary',
+  overline: 'font-medium text-overline text-muted uppercase tracking-overline',
+  micro: 'font-sans text-micro text-hint',
+  energyPill: 'font-medium uppercase',
 };
 
 interface DiuTextProps extends TextProps {

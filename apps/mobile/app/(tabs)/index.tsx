@@ -1,3 +1,3 @@
-import { FeedScreen } from '../../core/screens/FeedScreen';
+import { FeedScreen } from '@/core/screens/FeedScreen';
 
 export default FeedScreen;
