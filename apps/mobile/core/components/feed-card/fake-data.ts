@@ -1,9 +1,33 @@
-import { TCard, FocusRequired } from '#/types/card';
 import {
+  TCard,
+  FocusRequired,
   CardClass,
   GeneralType,
   SoftwareEngineeringType,
-} from '#/types/card/card';
+} from '@diu/types';
+
+export type TEndCard = {
+  kind: 'end';
+  id: string;
+  title: string;
+  description: string;
+};
+
+export type TFeedStackItem = TCard | TEndCard;
+
+export function isEndCard(item: TFeedStackItem): item is TEndCard {
+  return 'kind' in item && item.kind === 'end';
+}
+
+export const longCopyCard: TCard = {
+  id: 'long-copy',
+  title: 'Write the quarterly engineering update',
+  description: 'Summarize every initiative, risk, and dependency. '.repeat(50),
+  duration: 45,
+  focusRequired: FocusRequired.HIGH,
+  class: CardClass.GENERAL,
+  classType: GeneralType.MEETING,
+};
 
 export const cards: TCard[] = [
   {
@@ -15,6 +39,7 @@ export const cards: TCard[] = [
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.ISSUE,
   },
+  longCopyCard,
   {
     id: '2',
     title: 'Review PR #143',
@@ -52,3 +77,16 @@ export const cards: TCard[] = [
     classType: GeneralType.NEEDS_REPLY,
   },
 ];
+
+const endCard: TEndCard = {
+  kind: 'end',
+  id: 'end',
+  title: 'Caught up',
+  description: "You're through today's stack.",
+};
+
+export const feedStack: TFeedStackItem[] = [...cards, endCard];
+
+export async function loadFeedCards(): Promise<TFeedStackItem[]> {
+  return feedStack;
+}

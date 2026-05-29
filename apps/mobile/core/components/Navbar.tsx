@@ -70,14 +70,24 @@ export function Navbar({ state, navigation }: BottomTabBarProps) {
               (item) => item.name === route
             );
             const isFocused = routeIndex === state.index;
+            const routeKey = state.routes[routeIndex]?.key;
 
             return (
               <Pressable
                 key={route}
                 accessibilityRole="button"
                 onPress={() => {
-                  if (routeIndex >= 0)
+                  if (routeIndex < 0 || !routeKey) return;
+
+                  const event = navigation.emit({
+                    type: 'tabPress',
+                    target: routeKey,
+                    canPreventDefault: true,
+                  });
+
+                  if (!isFocused && !event.defaultPrevented) {
                     navigation.navigate(state.routes[routeIndex].name);
+                  }
                 }}
                 className="flex-1 items-center"
               >

@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { DiuText } from '../text/Text';
 import { useMemo } from 'react';
-import { FocusRequired } from '#/types/card';
+import { FocusRequired } from '@diu/types';
 
 interface EnergyPillProps {
   timeToCompletion: number; // in seconds

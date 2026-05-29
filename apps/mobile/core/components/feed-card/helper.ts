@@ -1,9 +1,9 @@
-import { TCard } from '#/types/card';
 import {
+  TCard,
   CardClass,
   GeneralType,
   SoftwareEngineeringType,
-} from '#/types/card/card';
+} from '@diu/types';
 
 interface CardStyle {
   backgroundColor: string;

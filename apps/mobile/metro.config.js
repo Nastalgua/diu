@@ -4,13 +4,13 @@ const { withNativeWind } = require('nativewind/metro');
 
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, '../..');
-const packagesRoot = path.resolve(monorepoRoot, 'packages');
 
 const config = getDefaultConfig(projectRoot);
 
-config.watchFolders = [packagesRoot];
+config.watchFolders = [monorepoRoot];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
+  path.resolve(monorepoRoot, 'node_modules'),
 ];
 
 module.exports = withNativeWind(config, { input: './global.css' });
