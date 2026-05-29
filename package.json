@@ -7,12 +7,13 @@
   ],
   "scripts": {
     "dev": "npm --prefix apps/mobile run start",
+    "dev:api": "npm --prefix apps/api run dev",
     "start": "npm --prefix apps/mobile run start",
     "android": "npm --prefix apps/mobile run android",
     "ios": "npm --prefix apps/mobile run ios",
     "web": "npm --prefix apps/mobile run web",
-    "typecheck": "npm --prefix apps/mobile run typecheck",
-    "test": "npm --prefix apps/mobile run test",
+    "typecheck": "npm --prefix apps/mobile run typecheck && npm --prefix apps/api run typecheck",
+    "test": "npm --prefix apps/mobile run test && npm --prefix apps/api run test",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
