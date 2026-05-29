@@ -1,10 +1,9 @@
-import { useRef } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 
-import {
-  feedStack,
-  isEndCard,
-} from '@/core/components/feed-card/fake-data';
+import { DiuText } from '@/core/components/text/Text';
+import type { TFeedStackItem } from '@/core/components/feed-card/fake-data';
+import { isEndCard } from '@/core/session/session-page';
 import {
   FeedPager,
   type FeedPagerHandle,
@@ -14,18 +13,15 @@ import { FeedPage } from '@/core/components/feed-pager/FeedPage';
 import { FeedViewportLayout } from '@/core/components/feed-pager/FeedViewportLayout';
 import { useFeedScrollPosition } from '@/core/components/feed-pager/useFeedScrollPosition';
 import { useFeedTabRefresh } from '@/core/components/feed-pager/useFeedTabRefresh';
+import { useSessionFeed } from '@/core/session/useSessionFeed';
+type FeedSessionStackProps = {
+  stack: TFeedStackItem[];
+  isRefreshing: boolean;
+};
 
-export function FeedScreen() {
+function FeedSessionStack({ stack, isRefreshing }: FeedSessionStackProps) {
   const pagerRef = useRef<FeedPagerHandle>(null);
-  const {
-    sessionId,
-    minimumIndex,
-    onIndexChange,
-    refresh,
-    isRefreshing,
-  } = useFeedScrollPosition();
-
-  useFeedTabRefresh(refresh);
+  const { sessionId, minimumIndex, onIndexChange } = useFeedScrollPosition();
 
   const advancePager = () => {
     pagerRef.current?.advanceToNext();
@@ -38,7 +34,7 @@ export function FeedScreen() {
           <FeedPager
             ref={pagerRef}
             key={sessionId}
-            items={feedStack}
+            items={stack}
             pageHeight={pageHeight}
             minimumIndex={minimumIndex}
             onIndexChange={onIndexChange}
@@ -66,5 +62,84 @@ export function FeedScreen() {
         </View>
       )}
     </FeedViewportLayout>
+  );
+}
+
+export function FeedScreen() {
+  const {
+    sessionId,
+    stack,
+    isLoading,
+    error,
+    refresh: refreshSession,
+    retry,
+  } = useSessionFeed();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const refresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshSession();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refreshSession]);
+
+  useFeedTabRefresh(refresh);
+
+  if (error && !sessionId) {
+    return (
+      <FeedViewportLayout>
+        {() => (
+          <View
+            testID="feed-session-error"
+            className="flex-1 items-center justify-center gap-4 px-6"
+          >
+            <DiuText variant="sectionHead" className="text-center">
+              Could not load today&apos;s stack
+            </DiuText>
+            <DiuText variant="bodySm" className="text-center">
+              {error}
+            </DiuText>
+            <Pressable
+              testID="feed-session-retry"
+              accessibilityRole="button"
+              accessibilityLabel="Retry"
+              className="bg-accent rounded-full px-6 py-3"
+              onPress={() => {
+                void retry();
+              }}
+            >
+              <DiuText variant="label" className="text-white">
+                Retry
+              </DiuText>
+            </Pressable>
+          </View>
+        )}
+      </FeedViewportLayout>
+    );
+  }
+
+  if (isLoading || !sessionId) {
+    return (
+      <FeedViewportLayout>
+        {() => (
+          <View
+            testID="feed-session-loading"
+            className="flex-1 items-center justify-center"
+          >
+            <ActivityIndicator size="large" color="#D85A30" />
+          </View>
+        )}
+      </FeedViewportLayout>
+    );
+  }
+
+  return (
+    <FeedSessionStack
+      key={sessionId}
+      stack={stack}
+      isRefreshing={isRefreshing}
+    />
   );
 }
