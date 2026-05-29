@@ -1,0 +1,14 @@
+import { View } from 'react-native';
+
+import { DiuText } from '@/core/components/text/Text';
+
+export function ProfileScreen() {
+  return (
+    <View className="flex-1 items-center justify-center bg-bg">
+      <DiuText variant="pageTitle">Profile</DiuText>
+      <DiuText variant="bodySm" className="mt-2">
+        You are on the Profile screen
+      </DiuText>
+    </View>
+  );
+}
