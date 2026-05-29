@@ -1,12 +1,18 @@
+import { fixtureDecks } from './fixture-cards.js';
+
 export type SessionRecord = {
   sessionId: string;
+  deckIndex: number;
   exhausted: boolean;
 };
 
 const sessions = new Map<string, SessionRecord>();
+let nextDeckIndex = 0;
 
 export function createSession(sessionId: string): SessionRecord {
-  const record: SessionRecord = { sessionId, exhausted: false };
+  const deckIndex = nextDeckIndex % fixtureDecks.length;
+  nextDeckIndex += 1;
+  const record: SessionRecord = { sessionId, deckIndex, exhausted: false };
   sessions.set(sessionId, record);
   return record;
 }
@@ -24,4 +30,5 @@ export function markSessionExhausted(sessionId: string): void {
 
 export function clearSessions(): void {
   sessions.clear();
+  nextDeckIndex = 0;
 }

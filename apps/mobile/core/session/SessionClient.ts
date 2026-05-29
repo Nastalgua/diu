@@ -23,4 +23,18 @@ export class SessionClient {
 
     return response.json() as Promise<TSessionPage>;
   }
+
+  async fetchNextPage(
+    sessionId: string,
+    cursor: string
+  ): Promise<TSessionPage> {
+    const url = `${this.baseUrl}/session/${sessionId}/cards?cursor=${encodeURIComponent(cursor)}`;
+    const response = await this.fetchFn(url);
+
+    if (!response.ok) {
+      throw new Error(`Session fetch failed: ${response.status}`);
+    }
+
+    return response.json() as Promise<TSessionPage>;
+  }
 }

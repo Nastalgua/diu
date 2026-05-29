@@ -30,6 +30,7 @@ function mockFakeSessionFeed() {
     error: null,
     refresh: jest.fn().mockResolvedValue('fake-session'),
     retry: jest.fn(),
+    prefetchIfNeeded: jest.fn(),
   });
 }
 
@@ -257,6 +258,7 @@ describe('FeedScreen', () => {
       error: null,
       refresh,
       retry: jest.fn(),
+      prefetchIfNeeded: jest.fn(),
     });
 
     render(<FeedScreen />);
@@ -295,6 +297,7 @@ describe('FeedScreen', () => {
       error: null,
       refresh: jest.fn(),
       retry: jest.fn(),
+      prefetchIfNeeded: jest.fn(),
     });
 
     render(<FeedScreen />);
@@ -334,6 +337,7 @@ describe('FeedScreen', () => {
       error: 'Network request failed',
       refresh: jest.fn(),
       retry,
+      prefetchIfNeeded: jest.fn(),
     });
 
     render(<FeedScreen />);

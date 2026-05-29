@@ -77,6 +77,18 @@ describe('session API', () => {
     expect(res.status).toBe(404);
   });
 
+  it('rotates fixture deck on each new session so refresh is visually distinct', async () => {
+    const first = await app.request('/session');
+    const second = await app.request('/session');
+
+    const firstBody = await first.json();
+    const secondBody = await second.json();
+
+    expect(firstBody.sessionId).not.toBe(secondBody.sessionId);
+    expect(firstBody.cards[0].title).toBe('Review PR #142');
+    expect(secondBody.cards[0].title).toBe('Draft Q2 roadmap');
+  });
+
   it('rejects further pages after session is exhausted', async () => {
     const created = await app.request('/session');
     const { sessionId } = await created.json();

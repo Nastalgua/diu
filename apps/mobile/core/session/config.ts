@@ -46,3 +46,5 @@ export function shouldUseFakeFeed(): boolean {
     process.env.NODE_ENV === 'test'
   );
 }
+
+export const PREFETCH_THRESHOLD = 2;

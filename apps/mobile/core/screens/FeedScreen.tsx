@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { DiuText } from '@/core/components/text/Text';
@@ -15,17 +15,36 @@ import { useFeedScrollPosition } from '@/core/components/feed-pager/useFeedScrol
 import { useFeedTabRefresh } from '@/core/components/feed-pager/useFeedTabRefresh';
 import { useSessionFeed } from '@/core/session/useSessionFeed';
 type FeedSessionStackProps = {
+  sessionId: string;
   stack: TFeedStackItem[];
   isRefreshing: boolean;
+  onPrefetchIfNeeded: (currentIndex: number) => void;
 };
 
-function FeedSessionStack({ stack, isRefreshing }: FeedSessionStackProps) {
+function FeedSessionStack({
+  sessionId,
+  stack,
+  isRefreshing,
+  onPrefetchIfNeeded,
+}: FeedSessionStackProps) {
   const pagerRef = useRef<FeedPagerHandle>(null);
-  const { sessionId, minimumIndex, onIndexChange } = useFeedScrollPosition();
+  const { minimumIndex, onIndexChange } = useFeedScrollPosition(sessionId);
 
   const advancePager = () => {
     pagerRef.current?.advanceToNext();
   };
+
+  const handleIndexChange = useCallback(
+    (index: number) => {
+      onIndexChange(index);
+      onPrefetchIfNeeded(index);
+    },
+    [onIndexChange, onPrefetchIfNeeded]
+  );
+
+  useEffect(() => {
+    onPrefetchIfNeeded(0);
+  }, [stack.length, onPrefetchIfNeeded]);
 
   return (
     <FeedViewportLayout>
@@ -37,7 +56,7 @@ function FeedSessionStack({ stack, isRefreshing }: FeedSessionStackProps) {
             items={stack}
             pageHeight={pageHeight}
             minimumIndex={minimumIndex}
-            onIndexChange={onIndexChange}
+            onIndexChange={handleIndexChange}
             keyExtractor={(item) => item.id}
             renderPage={(item) =>
               isEndCard(item) ? (
@@ -73,6 +92,7 @@ export function FeedScreen() {
     error,
     refresh: refreshSession,
     retry,
+    prefetchIfNeeded,
   } = useSessionFeed();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -137,9 +157,10 @@ export function FeedScreen() {
 
   return (
     <FeedSessionStack
-      key={sessionId}
+      sessionId={sessionId}
       stack={stack}
       isRefreshing={isRefreshing}
+      onPrefetchIfNeeded={prefetchIfNeeded}
     />
   );
 }

@@ -6,28 +6,52 @@ import {
   type TFeedStackItem,
 } from '@/core/components/feed-card/fake-data';
 import { SessionClient } from '@/core/session/SessionClient';
-import { sessionPageToStack } from '@/core/session/session-page';
-import { getApiBaseUrl, shouldUseFakeFeed } from '@/core/session/config';
+import {
+  getApiBaseUrl,
+  PREFETCH_THRESHOLD,
+  shouldUseFakeFeed,
+} from '@/core/session/config';
+import {
+  appendSessionPage,
+  sessionPageToStack,
+  stackHasEndCard,
+} from '@/core/session/session-page';
 
-export type SessionFeedClient = Pick<SessionClient, 'createSession'>;
+export type SessionFeedClient = Pick<
+  SessionClient,
+  'createSession' | 'fetchNextPage'
+>;
 
 export type UseSessionFeedOptions = {
   client?: SessionFeedClient;
   useFakeFeed?: boolean;
   loadFakeFeed?: () => Promise<TFeedStackItem[]>;
+  prefetchThreshold?: number;
 };
 
 type SessionFeedState = {
   sessionId: string | null;
   stack: TFeedStackItem[];
+  cursor: string | null;
+  hasMore: boolean;
   isLoading: boolean;
   error: string | null;
 };
 
+function shouldPrefetch(
+  currentIndex: number,
+  stackLength: number,
+  threshold: number
+): boolean {
+  return stackLength - currentIndex <= threshold;
+}
+
 export function useSessionFeed(options: UseSessionFeedOptions = {}) {
   const useFake = options.useFakeFeed ?? shouldUseFakeFeed();
+  const prefetchThreshold = options.prefetchThreshold ?? PREFETCH_THRESHOLD;
   const clientRef = useRef<SessionFeedClient | null>(null);
   const defaultClientRef = useRef<SessionClient | null>(null);
+  const prefetchingRef = useRef(false);
 
   if (options.client) {
     clientRef.current = options.client;
@@ -45,10 +69,19 @@ export function useSessionFeed(options: UseSessionFeedOptions = {}) {
       ? {
           sessionId: 'fake-session',
           stack: feedStack,
+          cursor: null,
+          hasMore: false,
           isLoading: false,
           error: null,
         }
-      : { sessionId: null, stack: [], isLoading: true, error: null }
+      : {
+          sessionId: null,
+          stack: [],
+          cursor: null,
+          hasMore: false,
+          isLoading: true,
+          error: null,
+        }
   );
 
   const loadSession = useCallback(async () => {
@@ -57,6 +90,8 @@ export function useSessionFeed(options: UseSessionFeedOptions = {}) {
       return {
         sessionId: 'fake-session',
         stack,
+        cursor: null as string | null,
+        hasMore: false,
       };
     }
 
@@ -65,14 +100,28 @@ export function useSessionFeed(options: UseSessionFeedOptions = {}) {
     return {
       sessionId: page.sessionId,
       stack: sessionPageToStack(page),
+      cursor: page.cursor,
+      hasMore: page.hasMore,
     };
   }, [useFake]);
 
   const applySession = useCallback(
-    ({ sessionId, stack }: { sessionId: string; stack: TFeedStackItem[] }) => {
+    ({
+      sessionId,
+      stack,
+      cursor,
+      hasMore,
+    }: {
+      sessionId: string;
+      stack: TFeedStackItem[];
+      cursor: string | null;
+      hasMore: boolean;
+    }) => {
       setState({
         sessionId,
         stack,
+        cursor,
+        hasMore,
         isLoading: false,
         error: null,
       });
@@ -113,9 +162,9 @@ export function useSessionFeed(options: UseSessionFeedOptions = {}) {
   }, [applyError, applySession, loadSession, useFake]);
 
   const refresh = useCallback(async () => {
+    prefetchingRef.current = false;
     setState((current) => ({
       ...current,
-      isLoading: true,
       error: null,
     }));
 
@@ -142,6 +191,43 @@ export function useSessionFeed(options: UseSessionFeedOptions = {}) {
     }
   }, [applyError, applySession, loadSession]);
 
+  const prefetchIfNeeded = useCallback(
+    (currentIndex: number) => {
+      if (useFake) return;
+
+      const { sessionId, stack, cursor, hasMore } = state;
+
+      if (
+        !sessionId ||
+        !hasMore ||
+        cursor === null ||
+        stackHasEndCard(stack) ||
+        !shouldPrefetch(currentIndex, stack.length, prefetchThreshold) ||
+        prefetchingRef.current
+      ) {
+        return;
+      }
+
+      prefetchingRef.current = true;
+      const client = clientRef.current ?? defaultClientRef.current!;
+
+      void client
+        .fetchNextPage(sessionId, cursor)
+        .then((page) => {
+          setState((current) => ({
+            ...current,
+            stack: appendSessionPage(current.stack, page),
+            cursor: page.cursor,
+            hasMore: page.hasMore,
+          }));
+        })
+        .finally(() => {
+          prefetchingRef.current = false;
+        });
+    },
+    [prefetchThreshold, state, useFake]
+  );
+
   return {
     sessionId: state.sessionId,
     stack: state.stack,
@@ -149,6 +235,7 @@ export function useSessionFeed(options: UseSessionFeedOptions = {}) {
     error: state.error,
     refresh,
     retry,
+    prefetchIfNeeded,
   };
 }
 

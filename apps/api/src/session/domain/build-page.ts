@@ -1,17 +1,18 @@
 import type { TEndCard, TSessionPage } from '@diu/types';
 import {
-  fixtureCards,
-  fixtureEndCard,
+  getFixtureDeck,
   SESSION_DAILY_MAX,
   SESSION_PAGE_SIZE,
 } from './fixture-cards.js';
-import { markSessionExhausted } from './session-store.js';
+import { getSession, markSessionExhausted } from './session-store.js';
 
 export function buildSessionPage(
   sessionId: string,
   offset: number
 ): TSessionPage {
-  const cards = fixtureCards.slice(offset, offset + SESSION_PAGE_SIZE);
+  const deckIndex = getSession(sessionId)?.deckIndex ?? 0;
+  const { cards: deckCards, endCard: deckEndCard } = getFixtureDeck(deckIndex);
+  const cards = deckCards.slice(offset, offset + SESSION_PAGE_SIZE);
   const nextOffset = offset + cards.length;
   const hasMore = nextOffset < SESSION_DAILY_MAX;
 
@@ -26,7 +27,7 @@ export function buildSessionPage(
 
   markSessionExhausted(sessionId);
 
-  const endCard: TEndCard = fixtureEndCard;
+  const endCard: TEndCard = deckEndCard;
 
   return {
     sessionId,
