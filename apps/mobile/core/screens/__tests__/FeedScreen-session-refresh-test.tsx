@@ -4,7 +4,6 @@ import {
   render,
   screen,
   waitFor,
-  within,
 } from '@testing-library/react-native';
 import type { TSessionPage } from '@diu/types';
 
@@ -77,6 +76,27 @@ function layoutFeedViewport() {
   });
 }
 
+function scrollFeedPagerTo(offsetY: number, pageCount: number) {
+  const pager = screen.getByTestId('feed-pager');
+  const contentHeight = PAGE_HEIGHT * pageCount;
+
+  fireEvent.scroll(pager, {
+    nativeEvent: {
+      contentOffset: { y: offsetY, x: 0 },
+      contentSize: { height: contentHeight, width: 375 },
+      layoutMeasurement: { height: PAGE_HEIGHT, width: 375 },
+    },
+  });
+
+  fireEvent(pager, 'onMomentumScrollEnd', {
+    nativeEvent: {
+      contentOffset: { y: offsetY, x: 0 },
+      contentSize: { height: contentHeight, width: 375 },
+      layoutMeasurement: { height: PAGE_HEIGHT, width: 375 },
+    },
+  });
+}
+
 describe('FeedScreen session refresh', () => {
   let resolveRefresh!: (page: TSessionPage) => void;
 
@@ -115,11 +135,7 @@ describe('FeedScreen session refresh', () => {
       expect(screen.getByText('First card')).toBeOnTheScreen();
     });
 
-    const saveButton = within(screen.getByTestId('feed-pager')).getAllByRole(
-      'button',
-      { name: 'Save' }
-    )[0];
-    fireEvent.press(saveButton);
+    scrollFeedPagerTo(PAGE_HEIGHT, initialPage.cards.length);
 
     expect(screen.getByText('Second card')).toBeOnTheScreen();
     expect(screen.queryByTestId('feed-session-loading')).toBeNull();

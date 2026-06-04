@@ -83,12 +83,8 @@ function scrollFeedPagerTo(offsetY: number) {
 }
 
 function advanceThroughWorkCards() {
-  for (let i = 0; i < cards.length; i++) {
-    const saveButton = within(screen.getByTestId('feed-pager')).getAllByRole(
-      'button',
-      { name: 'Save' }
-    )[0];
-    fireEvent.press(saveButton);
+  for (let i = 1; i <= cards.length; i++) {
+    scrollFeedPagerTo(PAGE_HEIGHT * i);
   }
 }
 
@@ -117,7 +113,7 @@ describe('FeedScreen', () => {
     ).toBeNull();
   });
 
-  test('tapping Save advances to the next card', () => {
+  test('toggling Save shows Saved state without advancing', () => {
     render(<FeedScreen />);
     layoutFeedViewport();
 
@@ -129,10 +125,29 @@ describe('FeedScreen', () => {
     )[0];
     fireEvent.press(saveButton);
 
-    expect(screen.getByText(cards[1].title)).toBeOnTheScreen();
+    expect(screen.getByText(cards[0].title)).toBeOnTheScreen();
+    expect(
+      within(screen.getByTestId('feed-pager')).getByRole('button', {
+        name: 'Saved',
+      })
+    ).toBeOnTheScreen();
   });
 
-  test('tapping Tackle advances to the next card', () => {
+  test('toggling Tackle shows Tackling state without advancing', () => {
+    const recordTackle = jest.fn();
+    mockUseSessionFeed.mockReturnValue({
+      sessionId: 'fake-session',
+      stack: feedStack,
+      resumeIndex: 0,
+      isLoading: false,
+      error: null,
+      refresh: jest.fn().mockResolvedValue('fake-session'),
+      retry: jest.fn(),
+      prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle,
+    });
+
     render(<FeedScreen />);
     layoutFeedViewport();
 
@@ -144,7 +159,13 @@ describe('FeedScreen', () => {
     )[0];
     fireEvent.press(tackleButton);
 
-    expect(screen.getByText(cards[1].title)).toBeOnTheScreen();
+    expect(screen.getByText(cards[0].title)).toBeOnTheScreen();
+    expect(
+      within(screen.getByTestId('feed-pager')).getByRole('button', {
+        name: 'Tackling',
+      })
+    ).toBeOnTheScreen();
+    expect(recordTackle).toHaveBeenCalledWith(cards[0].primarySource);
   });
 
   test('renders an action bar on each work card page', () => {
@@ -174,12 +195,8 @@ describe('FeedScreen', () => {
     render(<FeedScreen />);
     layoutFeedViewport();
 
-    for (let i = 0; i < cards.length - 1; i++) {
-      const saveButton = within(screen.getByTestId('feed-pager')).getAllByRole(
-        'button',
-        { name: 'Save' }
-      )[0];
-      fireEvent.press(saveButton);
+    for (let i = 1; i < cards.length; i++) {
+      scrollFeedPagerTo(PAGE_HEIGHT * i);
     }
 
     expect(screen.getByText(cards[cards.length - 1].title)).toBeOnTheScreen();
@@ -228,12 +245,7 @@ describe('FeedScreen', () => {
     render(<FeedScreen />);
     layoutFeedViewport();
 
-    const saveButton = within(screen.getByTestId('feed-pager')).getAllByRole(
-      'button',
-      { name: 'Save' }
-    )[0];
-    fireEvent.press(saveButton);
-    fireEvent.press(saveButton);
+    scrollFeedPagerTo(PAGE_HEIGHT * 2);
 
     expect(screen.getByText(cards[2].title)).toBeOnTheScreen();
 
@@ -324,11 +336,7 @@ describe('FeedScreen', () => {
     render(<FeedScreen />);
     layoutFeedViewport();
 
-    const saveButton = within(screen.getByTestId('feed-pager')).getAllByRole(
-      'button',
-      { name: 'Save' }
-    )[0];
-    fireEvent.press(saveButton);
+    scrollFeedPagerTo(PAGE_HEIGHT);
 
     expect(screen.getByText(cards[1].title)).toBeOnTheScreen();
 

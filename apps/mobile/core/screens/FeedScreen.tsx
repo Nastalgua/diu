@@ -4,6 +4,7 @@ import type { TCard } from '@diu/types';
 
 import { DiuText } from '@/core/components/text/Text';
 import type { TFeedStackItem } from '@/core/components/feed-card/fake-data';
+import { primarySourceKey } from '@/core/session/primary-source-key';
 import { isEndCard } from '@/core/session/session-page';
 import {
   FeedPager,
@@ -22,7 +23,7 @@ type FeedSessionStackProps = {
   isRefreshing: boolean;
   onPrefetchIfNeeded: (currentIndex: number) => void;
   onResumeIndexChange: (index: number) => void;
-  onTackleCard: (card: TCard) => void;
+  onTackleToggle: (card: TCard, next: boolean) => void;
 };
 
 function FeedSessionStack({
@@ -32,15 +33,50 @@ function FeedSessionStack({
   isRefreshing,
   onPrefetchIfNeeded,
   onResumeIndexChange,
-  onTackleCard,
+  onTackleToggle,
 }: FeedSessionStackProps) {
   const pagerRef = useRef<FeedPagerHandle>(null);
   const { initialIndex, minimumIndex, onIndexChange } =
     useFeedScrollPosition(sessionId, resumeIndex);
+  const [savedCardIds, setSavedCardIds] = useState<Set<string>>(
+    () => new Set()
+  );
+  const [tackledPrimarySources, setTackledPrimarySources] = useState<
+    Set<string>
+  >(() => new Set());
 
-  const advancePager = () => {
-    pagerRef.current?.advanceToNext();
-  };
+  const toggleSave = useCallback((cardId: string) => {
+    setSavedCardIds((current) => {
+      const next = new Set(current);
+      if (next.has(cardId)) {
+        next.delete(cardId);
+      } else {
+        next.add(cardId);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleTackle = useCallback(
+    (card: TCard) => {
+      const key = primarySourceKey(card.primarySource);
+      let adding = false;
+
+      setTackledPrimarySources((current) => {
+        adding = !current.has(key);
+        const next = new Set(current);
+        if (adding) {
+          next.add(key);
+        } else {
+          next.delete(key);
+        }
+        return next;
+      });
+
+      onTackleToggle(card, adding);
+    },
+    [onTackleToggle]
+  );
 
   const handleIndexChange = useCallback(
     (index: number) => {
@@ -74,10 +110,15 @@ function FeedSessionStack({
               ) : (
                 <FeedPage
                   card={item}
-                  onSave={advancePager}
-                  onTackle={() => {
-                    onTackleCard(item);
-                    advancePager();
+                  isSaved={savedCardIds.has(item.id)}
+                  isTackling={tackledPrimarySources.has(
+                    primarySourceKey(item.primarySource)
+                  )}
+                  onSaveToggle={() => {
+                    toggleSave(item.id);
+                  }}
+                  onTackleToggle={() => {
+                    toggleTackle(item);
                   }}
                 />
               )
@@ -111,9 +152,11 @@ export function FeedScreen() {
     recordTackle,
   } = useSessionFeed();
 
-  const handleTackleCard = useCallback(
-    (card: TCard) => {
-      void recordTackle(card.primarySource);
+  const handleTackleToggle = useCallback(
+    (card: TCard, next: boolean) => {
+      if (next) {
+        void recordTackle(card.primarySource);
+      }
     },
     [recordTackle]
   );
@@ -186,7 +229,7 @@ export function FeedScreen() {
       isRefreshing={isRefreshing}
       onPrefetchIfNeeded={prefetchIfNeeded}
       onResumeIndexChange={updateResumeIndex}
-      onTackleCard={handleTackleCard}
+      onTackleToggle={handleTackleToggle}
     />
   );
 }

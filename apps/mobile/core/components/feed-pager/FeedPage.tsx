@@ -7,11 +7,19 @@ import { FeedActionBar } from '@/core/components/feed-pager/FeedActionBar';
 
 type FeedPageProps = {
   card: TCard;
-  onSave: () => void;
-  onTackle: () => void;
+  isSaved: boolean;
+  isTackling: boolean;
+  onSaveToggle: () => void;
+  onTackleToggle: () => void;
 };
 
-export function FeedPage({ card, onSave, onTackle }: FeedPageProps) {
+export function FeedPage({
+  card,
+  isSaved,
+  isTackling,
+  onSaveToggle,
+  onTackleToggle,
+}: FeedPageProps) {
   const { backgroundColor } = getCardStyle(card);
 
   return (
@@ -24,8 +32,10 @@ export function FeedPage({ card, onSave, onTackle }: FeedPageProps) {
       </View>
       <FeedActionBar
         pageBackgroundClassName={backgroundColor}
-        onSave={onSave}
-        onTackle={onTackle}
+        isSaved={isSaved}
+        isTackling={isTackling}
+        onSaveToggle={onSaveToggle}
+        onTackleToggle={onTackleToggle}
       />
     </View>
   );
