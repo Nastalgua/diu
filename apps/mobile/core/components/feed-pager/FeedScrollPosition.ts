@@ -41,3 +41,16 @@ export class FeedScrollPosition {
     this.index = nextIndex;
   }
 }
+
+export function restoreFeedScrollPosition(
+  sessionId: string,
+  resumeIndex: number
+): FeedScrollPosition {
+  const position = new FeedScrollPosition(sessionId, resumeIndex);
+
+  for (let index = 0; index < resumeIndex; index++) {
+    position.markSeen(index);
+  }
+
+  return position;
+}

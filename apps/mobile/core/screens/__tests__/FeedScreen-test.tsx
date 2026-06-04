@@ -6,10 +6,36 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { CardClass, FocusRequired, SoftwareEngineeringType } from '@diu/types';
 
-import * as fakeData from '@/core/components/feed-card/fake-data';
-import { cards, feedStack, isEndCard, longCopyCard } from '@/core/components/feed-card/fake-data';
+import {
+  cards,
+  feedStack,
+  longCopyCard,
+} from '@/core/components/feed-card/fake-data';
 import { FeedScreen } from '@/core/screens/FeedScreen';
+import { useSessionFeed } from '@/core/session/useSessionFeed';
+
+jest.mock('@/core/session/useSessionFeed');
+
+const mockUseSessionFeed = useSessionFeed as jest.MockedFunction<
+  typeof useSessionFeed
+>;
+
+function mockFakeSessionFeed() {
+  mockUseSessionFeed.mockReturnValue({
+    sessionId: 'fake-session',
+    stack: feedStack,
+    resumeIndex: 0,
+    isLoading: false,
+    error: null,
+    refresh: jest.fn().mockResolvedValue('fake-session'),
+    retry: jest.fn(),
+    prefetchIfNeeded: jest.fn(),
+    updateResumeIndex: jest.fn(),
+    recordTackle: jest.fn(),
+  });
+}
 
 let mockTabPressHandler: (() => void) | undefined;
 let mockIsFocused = true;
@@ -70,6 +96,7 @@ describe('FeedScreen', () => {
   beforeEach(() => {
     mockTabPressHandler = undefined;
     mockIsFocused = true;
+    mockFakeSessionFeed();
   });
 
   test('shows Save and Tackle on the current pager page', () => {
@@ -220,13 +247,25 @@ describe('FeedScreen', () => {
   });
 
   test('re-tapping the Feed tab shows loading feedback', async () => {
-    let resolveLoad!: (value: typeof feedStack) => void;
-    jest.spyOn(fakeData, 'loadFeedCards').mockImplementation(
+    let resolveRefresh!: (value: string) => void;
+    const refresh = jest.fn(
       () =>
-        new Promise((resolve) => {
-          resolveLoad = resolve;
+        new Promise<string>((resolve) => {
+          resolveRefresh = resolve;
         })
     );
+    mockUseSessionFeed.mockReturnValue({
+      sessionId: 'fake-session',
+      stack: feedStack,
+      resumeIndex: 0,
+      isLoading: false,
+      error: null,
+      refresh,
+      retry: jest.fn(),
+      prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle: jest.fn(),
+    });
 
     render(<FeedScreen />);
     layoutFeedViewport();
@@ -238,14 +277,46 @@ describe('FeedScreen', () => {
     expect(screen.getByTestId('feed-refresh-loading')).toBeOnTheScreen();
 
     await act(async () => {
-      resolveLoad(feedStack);
+      resolveRefresh('fake-session-2');
     });
 
     await waitFor(() => {
       expect(screen.queryByTestId('feed-refresh-loading')).toBeNull();
     });
+  });
 
-    jest.restoreAllMocks();
+  test('renders server-authored cards from the session API', () => {
+    mockUseSessionFeed.mockReturnValue({
+      sessionId: 'server-session-abc',
+      stack: [
+        {
+          id: 'api-1',
+          title: 'Review PR #142',
+          description: 'Auth refactor — 3 files changed, 2 approvals needed',
+          duration: 600,
+          focusRequired: FocusRequired.LOW,
+          class: CardClass.SOFTWARE_ENGINEERING,
+          classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
+          primarySource: { integration: 'github', sourceId: 'pr-142' },
+        },
+      ],
+      resumeIndex: 0,
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+      retry: jest.fn(),
+      prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle: jest.fn(),
+    });
+
+    render(<FeedScreen />);
+    layoutFeedViewport();
+
+    expect(screen.getByText('Review PR #142')).toBeOnTheScreen();
+    expect(
+      screen.getByText('Auth refactor — 3 files changed, 2 approvals needed')
+    ).toBeOnTheScreen();
   });
 
   test('does not refresh when the Feed tab is pressed while another tab is active', async () => {
@@ -267,6 +338,64 @@ describe('FeedScreen', () => {
     expect(screen.queryByTestId('feed-refresh-loading')).toBeNull();
   });
 
+  test('shows retry UI when session fetch fails', () => {
+    const retry = jest.fn();
+    mockUseSessionFeed.mockReturnValue({
+      sessionId: null,
+      stack: [],
+      resumeIndex: 0,
+      isLoading: false,
+      error: 'Network request failed',
+      refresh: jest.fn(),
+      retry,
+      prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle: jest.fn(),
+    });
+
+    render(<FeedScreen />);
+    layoutFeedViewport();
+
+    expect(screen.getByTestId('feed-session-error')).toBeOnTheScreen();
+    expect(screen.getByText('Network request failed')).toBeOnTheScreen();
+
+    fireEvent.press(screen.getByTestId('feed-session-retry'));
+    expect(retry).toHaveBeenCalledTimes(1);
+  });
+
+  test('keeps the feed visible when refresh fails after a session is loaded', () => {
+    mockUseSessionFeed.mockReturnValue({
+      sessionId: 'server-session-abc',
+      stack: [
+        {
+          id: 'api-1',
+          title: 'Review PR #142',
+          description: 'Auth refactor',
+          duration: 600,
+          focusRequired: FocusRequired.LOW,
+          class: CardClass.SOFTWARE_ENGINEERING,
+          classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
+          primarySource: { integration: 'github', sourceId: 'pr-142' },
+        },
+      ],
+      resumeIndex: 0,
+      isLoading: false,
+      error: 'Refresh failed',
+      refresh: jest.fn(),
+      retry: jest.fn(),
+      prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle: jest.fn(),
+    });
+
+    render(<FeedScreen />);
+    layoutFeedViewport();
+
+    expect(screen.getByText('Review PR #142')).toBeOnTheScreen();
+    expect(screen.queryByTestId('feed-session-error')).toBeNull();
+    expect(screen.queryByTestId('feed-session-loading')).toBeNull();
+  });
+
   test('long copy card scrolls internally without breaking page snap', () => {
     render(<FeedScreen />);
     layoutFeedViewport();
@@ -279,7 +408,9 @@ describe('FeedScreen', () => {
       .find((page) => within(page).queryByText(longCopyCard.title));
 
     expect(longCopyPage).toBeTruthy();
-    expect(within(longCopyPage!).getByTestId('feed-card-scroll')).toBeOnTheScreen();
+    expect(
+      within(longCopyPage!).getByTestId('feed-card-scroll')
+    ).toBeOnTheScreen();
 
     scrollFeedPagerTo(PAGE_HEIGHT * 2);
 

@@ -27,6 +27,7 @@ export const longCopyCard: TCard = {
   focusRequired: FocusRequired.HIGH,
   class: CardClass.GENERAL,
   classType: GeneralType.MEETING,
+  primarySource: { integration: 'notion', sourceId: 'quarterly-update' },
 };
 
 export const cards: TCard[] = [
@@ -38,6 +39,7 @@ export const cards: TCard[] = [
     focusRequired: FocusRequired.LOW,
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.ISSUE,
+    primarySource: { integration: 'github', sourceId: 'pr-142' },
   },
   longCopyCard,
   {
@@ -48,6 +50,7 @@ export const cards: TCard[] = [
     focusRequired: FocusRequired.MEDIUM,
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
+    primarySource: { integration: 'github', sourceId: 'pr-143' },
   },
   {
     id: '3',
@@ -57,6 +60,7 @@ export const cards: TCard[] = [
     focusRequired: FocusRequired.HIGH,
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.PR_READY_TO_MERGE,
+    primarySource: { integration: 'github', sourceId: 'pr-144' },
   },
   {
     id: '4',
@@ -66,6 +70,7 @@ export const cards: TCard[] = [
     focusRequired: FocusRequired.HIGH,
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
+    primarySource: { integration: 'google-calendar', sourceId: '1on1-john' },
   },
   {
     id: '5',
@@ -75,6 +80,7 @@ export const cards: TCard[] = [
     focusRequired: FocusRequired.LOW,
     class: CardClass.GENERAL,
     classType: GeneralType.NEEDS_REPLY,
+    primarySource: { integration: 'gmail', sourceId: 'thread-john-doe' },
   },
 ];
 

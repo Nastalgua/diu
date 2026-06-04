@@ -110,7 +110,9 @@ describe('FeedPager', () => {
   test('does not use pull-to-refresh', () => {
     renderPager();
 
-    expect(screen.getByTestId('feed-pager').props.refreshControl).toBeUndefined();
+    expect(
+      screen.getByTestId('feed-pager').props.refreshControl
+    ).toBeUndefined();
   });
 
   test('gives swipe feedback when the user starts dragging', () => {

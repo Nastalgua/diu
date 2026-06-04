@@ -16,6 +16,7 @@ const longCopyCard: TCard = {
   focusRequired: FocusRequired.HIGH,
   class: CardClass.GENERAL,
   classType: GeneralType.MEETING,
+  primarySource: { integration: 'notion', sourceId: 'quarterly-update' },
 };
 
 describe('FeedCardItem', () => {

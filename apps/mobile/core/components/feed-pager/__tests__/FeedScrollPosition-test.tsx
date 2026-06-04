@@ -1,4 +1,7 @@
-import { FeedScrollPosition } from '@/core/components/feed-pager/FeedScrollPosition';
+import {
+  FeedScrollPosition,
+  restoreFeedScrollPosition,
+} from '@/core/components/feed-pager/FeedScrollPosition';
 
 describe('FeedScrollPosition', () => {
   test('canGoBack is false at index 0', () => {
@@ -41,6 +44,14 @@ describe('FeedScrollPosition', () => {
 
     expect(position.canGoBack()).toBe(false);
     expect(position.getMinimumIndex()).toBe(1);
+  });
+
+  test('restoreFeedScrollPosition marks prior cards as seen for swipe-back', () => {
+    const position = restoreFeedScrollPosition('session-1', 2);
+
+    expect(position.getIndex()).toBe(2);
+    expect(position.getMinimumIndex()).toBe(0);
+    expect(position.canGoBack()).toBe(true);
   });
 
   test('swipe-back moves through seen cards in order', () => {

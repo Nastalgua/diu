@@ -1,4 +1,10 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from 'react';
 import {
   FlatList,
   NativeScrollEvent,
@@ -22,7 +28,11 @@ export type FeedPagerProps<T> = {
   keyExtractor: (item: T, index: number) => string;
 };
 
-function indexFromOffset(offsetY: number, pageHeight: number, itemCount: number) {
+function indexFromOffset(
+  offsetY: number,
+  pageHeight: number,
+  itemCount: number
+) {
   if (itemCount === 0) return 0;
 
   const rawIndex = Math.round(offsetY / pageHeight);
@@ -57,10 +67,7 @@ function FeedPagerInner<T>(
 
   const settleAtIndex = useCallback(
     (nextIndex: number) => {
-      const clampedIndex = Math.min(
-        Math.max(nextIndex, 0),
-        items.length - 1
-      );
+      const clampedIndex = Math.min(Math.max(nextIndex, 0), items.length - 1);
       const maxDelta = 1;
       const boundedIndex = Math.max(
         Math.min(

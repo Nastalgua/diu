@@ -20,6 +20,8 @@ export enum SoftwareEngineeringType {
   PR_READY_TO_MERGE = 'pr-ready-to-merge',
 }
 
+import type { TPrimarySource } from './primary-source';
+
 type CardClassType = GeneralType | SoftwareEngineeringType;
 
 export type TCard = {
@@ -30,4 +32,5 @@ export type TCard = {
   focusRequired: FocusRequired;
   class: CardClass;
   classType: CardClassType;
+  primarySource: TPrimarySource;
 };
