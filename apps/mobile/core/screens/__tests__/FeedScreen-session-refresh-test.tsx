@@ -6,14 +6,10 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
-import {
-  CardClass,
-  FocusRequired,
-  GeneralType,
-  type TSessionPage,
-} from '@diu/types';
+import type { TSessionPage } from '@diu/types';
 
 import { FeedScreen } from '@/core/screens/FeedScreen';
+import { testCard } from '@/core/session/test-card';
 import type {
   SessionFeedClient,
   UseSessionFeedOptions,
@@ -21,26 +17,19 @@ import type {
 
 const PAGE_HEIGHT = 800;
 
-const card = (id: string, title: string) => ({
-  id,
-  title,
-  description: `Description for ${title}`,
-  duration: 600,
-  focusRequired: FocusRequired.MEDIUM,
-  class: CardClass.GENERAL,
-  classType: GeneralType.MEETING,
-});
-
 const initialPage: TSessionPage = {
   sessionId: 'server-session-abc',
-  cards: [card('api-1', 'First card'), card('api-2', 'Second card')],
+  cards: [testCard('api-1', 'First card'), testCard('api-2', 'Second card')],
   cursor: '2',
   hasMore: true,
 };
 
 const refreshedPage: TSessionPage = {
   sessionId: 'server-session-xyz',
-  cards: [card('api-9', 'Fresh first card'), card('api-10', 'Fresh second card')],
+  cards: [
+    testCard('api-9', 'Fresh first card'),
+    testCard('api-10', 'Fresh second card'),
+  ],
   cursor: '2',
   hasMore: true,
 };
@@ -48,6 +37,7 @@ const refreshedPage: TSessionPage = {
 const mockSessionClient: SessionFeedClient = {
   createSession: jest.fn(),
   fetchNextPage: jest.fn(),
+  recordTackle: jest.fn(),
 };
 
 jest.mock('@/core/session/useSessionFeed', () => {

@@ -26,11 +26,14 @@ function mockFakeSessionFeed() {
   mockUseSessionFeed.mockReturnValue({
     sessionId: 'fake-session',
     stack: feedStack,
+    resumeIndex: 0,
     isLoading: false,
     error: null,
     refresh: jest.fn().mockResolvedValue('fake-session'),
     retry: jest.fn(),
     prefetchIfNeeded: jest.fn(),
+    updateResumeIndex: jest.fn(),
+    recordTackle: jest.fn(),
   });
 }
 
@@ -254,11 +257,14 @@ describe('FeedScreen', () => {
     mockUseSessionFeed.mockReturnValue({
       sessionId: 'fake-session',
       stack: feedStack,
+      resumeIndex: 0,
       isLoading: false,
       error: null,
       refresh,
       retry: jest.fn(),
       prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle: jest.fn(),
     });
 
     render(<FeedScreen />);
@@ -291,13 +297,17 @@ describe('FeedScreen', () => {
           focusRequired: FocusRequired.LOW,
           class: CardClass.SOFTWARE_ENGINEERING,
           classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
+          primarySource: { integration: 'github', sourceId: 'pr-142' },
         },
       ],
+      resumeIndex: 0,
       isLoading: false,
       error: null,
       refresh: jest.fn(),
       retry: jest.fn(),
       prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle: jest.fn(),
     });
 
     render(<FeedScreen />);
@@ -333,11 +343,14 @@ describe('FeedScreen', () => {
     mockUseSessionFeed.mockReturnValue({
       sessionId: null,
       stack: [],
+      resumeIndex: 0,
       isLoading: false,
       error: 'Network request failed',
       refresh: jest.fn(),
       retry,
       prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle: jest.fn(),
     });
 
     render(<FeedScreen />);
@@ -348,6 +361,39 @@ describe('FeedScreen', () => {
 
     fireEvent.press(screen.getByTestId('feed-session-retry'));
     expect(retry).toHaveBeenCalledTimes(1);
+  });
+
+  test('keeps the feed visible when refresh fails after a session is loaded', () => {
+    mockUseSessionFeed.mockReturnValue({
+      sessionId: 'server-session-abc',
+      stack: [
+        {
+          id: 'api-1',
+          title: 'Review PR #142',
+          description: 'Auth refactor',
+          duration: 600,
+          focusRequired: FocusRequired.LOW,
+          class: CardClass.SOFTWARE_ENGINEERING,
+          classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
+          primarySource: { integration: 'github', sourceId: 'pr-142' },
+        },
+      ],
+      resumeIndex: 0,
+      isLoading: false,
+      error: 'Refresh failed',
+      refresh: jest.fn(),
+      retry: jest.fn(),
+      prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle: jest.fn(),
+    });
+
+    render(<FeedScreen />);
+    layoutFeedViewport();
+
+    expect(screen.getByText('Review PR #142')).toBeOnTheScreen();
+    expect(screen.queryByTestId('feed-session-error')).toBeNull();
+    expect(screen.queryByTestId('feed-session-loading')).toBeNull();
   });
 
   test('long copy card scrolls internally without breaking page snap', () => {

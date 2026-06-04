@@ -19,6 +19,7 @@ export const fixtureCards: TCard[] = [
     focusRequired: FocusRequired.LOW,
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
+    primarySource: { integration: 'github', sourceId: 'pr-142' },
   },
   {
     id: '2',
@@ -28,6 +29,7 @@ export const fixtureCards: TCard[] = [
     focusRequired: FocusRequired.MEDIUM,
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
+    primarySource: { integration: 'google-calendar', sourceId: 'standup-9am' },
   },
   {
     id: '3',
@@ -37,6 +39,7 @@ export const fixtureCards: TCard[] = [
     focusRequired: FocusRequired.LOW,
     class: CardClass.GENERAL,
     classType: GeneralType.NEEDS_REPLY,
+    primarySource: { integration: 'gmail', sourceId: 'thread-john-doe' },
   },
   {
     id: '4',
@@ -46,6 +49,7 @@ export const fixtureCards: TCard[] = [
     focusRequired: FocusRequired.MEDIUM,
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
+    primarySource: { integration: 'github', sourceId: 'pr-142' },
   },
   {
     id: '5',
@@ -55,6 +59,7 @@ export const fixtureCards: TCard[] = [
     focusRequired: FocusRequired.HIGH,
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
+    primarySource: { integration: 'google-calendar', sourceId: '1on1-john' },
   },
 ];
 
@@ -75,6 +80,7 @@ const fixtureCardsDeckB: TCard[] = [
     focusRequired: FocusRequired.HIGH,
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
+    primarySource: { integration: 'notion', sourceId: 'q2-roadmap' },
   },
   {
     id: 'b-2',
@@ -84,6 +90,7 @@ const fixtureCardsDeckB: TCard[] = [
     focusRequired: FocusRequired.MEDIUM,
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
+    primarySource: { integration: 'github', sourceId: 'ci-flaky-main' },
   },
   {
     id: 'b-3',
@@ -93,6 +100,7 @@ const fixtureCardsDeckB: TCard[] = [
     focusRequired: FocusRequired.LOW,
     class: CardClass.GENERAL,
     classType: GeneralType.NEEDS_REPLY,
+    primarySource: { integration: 'figma', sourceId: 'nav-mock-comments' },
   },
   {
     id: 'b-4',
@@ -102,6 +110,7 @@ const fixtureCardsDeckB: TCard[] = [
     focusRequired: FocusRequired.LOW,
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
+    primarySource: { integration: 'google-calendar', sourceId: '1on1-alex' },
   },
   {
     id: 'b-5',
@@ -111,6 +120,7 @@ const fixtureCardsDeckB: TCard[] = [
     focusRequired: FocusRequired.MEDIUM,
     class: CardClass.GENERAL,
     classType: GeneralType.NEEDS_REPLY,
+    primarySource: { integration: 'gmail', sourceId: 'inbox-starred' },
   },
 ];
 

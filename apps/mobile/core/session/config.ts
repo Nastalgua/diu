@@ -41,9 +41,14 @@ export function getApiBaseUrl(): string {
 }
 
 export function shouldUseFakeFeed(): boolean {
+  if (process.env.EXPO_PUBLIC_USE_FAKE_FEED === 'false') {
+    return false;
+  }
+
   return (
     process.env.EXPO_PUBLIC_USE_FAKE_FEED === 'true' ||
-    process.env.NODE_ENV === 'test'
+    process.env.NODE_ENV === 'test' ||
+    __DEV__
   );
 }
 

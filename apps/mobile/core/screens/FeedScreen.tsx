@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
+import type { TCard } from '@diu/types';
 
 import { DiuText } from '@/core/components/text/Text';
 import type { TFeedStackItem } from '@/core/components/feed-card/fake-data';
@@ -17,18 +18,25 @@ import { useSessionFeed } from '@/core/session/useSessionFeed';
 type FeedSessionStackProps = {
   sessionId: string;
   stack: TFeedStackItem[];
+  resumeIndex: number;
   isRefreshing: boolean;
   onPrefetchIfNeeded: (currentIndex: number) => void;
+  onResumeIndexChange: (index: number) => void;
+  onTackleCard: (card: TCard) => void;
 };
 
 function FeedSessionStack({
   sessionId,
   stack,
+  resumeIndex,
   isRefreshing,
   onPrefetchIfNeeded,
+  onResumeIndexChange,
+  onTackleCard,
 }: FeedSessionStackProps) {
   const pagerRef = useRef<FeedPagerHandle>(null);
-  const { minimumIndex, onIndexChange } = useFeedScrollPosition(sessionId);
+  const { initialIndex, minimumIndex, onIndexChange } =
+    useFeedScrollPosition(sessionId, resumeIndex);
 
   const advancePager = () => {
     pagerRef.current?.advanceToNext();
@@ -37,9 +45,10 @@ function FeedSessionStack({
   const handleIndexChange = useCallback(
     (index: number) => {
       onIndexChange(index);
+      onResumeIndexChange(index);
       onPrefetchIfNeeded(index);
     },
-    [onIndexChange, onPrefetchIfNeeded]
+    [onIndexChange, onPrefetchIfNeeded, onResumeIndexChange]
   );
 
   useEffect(() => {
@@ -55,6 +64,7 @@ function FeedSessionStack({
             key={sessionId}
             items={stack}
             pageHeight={pageHeight}
+            initialIndex={initialIndex}
             minimumIndex={minimumIndex}
             onIndexChange={handleIndexChange}
             keyExtractor={(item) => item.id}
@@ -65,7 +75,10 @@ function FeedSessionStack({
                 <FeedPage
                   card={item}
                   onSave={advancePager}
-                  onTackle={advancePager}
+                  onTackle={() => {
+                    onTackleCard(item);
+                    advancePager();
+                  }}
                 />
               )
             }
@@ -73,7 +86,7 @@ function FeedSessionStack({
           {isRefreshing ? (
             <View
               testID="feed-refresh-loading"
-              className="absolute inset-0 items-center justify-center bg-surface/80"
+              className="bg-surface/80 absolute inset-0 items-center justify-center"
             >
               <ActivityIndicator size="large" color="#D85A30" />
             </View>
@@ -88,12 +101,22 @@ export function FeedScreen() {
   const {
     sessionId,
     stack,
+    resumeIndex,
     isLoading,
     error,
     refresh: refreshSession,
     retry,
     prefetchIfNeeded,
+    updateResumeIndex,
+    recordTackle,
   } = useSessionFeed();
+
+  const handleTackleCard = useCallback(
+    (card: TCard) => {
+      void recordTackle(card.primarySource);
+    },
+    [recordTackle]
+  );
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -159,8 +182,11 @@ export function FeedScreen() {
     <FeedSessionStack
       sessionId={sessionId}
       stack={stack}
+      resumeIndex={resumeIndex}
       isRefreshing={isRefreshing}
       onPrefetchIfNeeded={prefetchIfNeeded}
+      onResumeIndexChange={updateResumeIndex}
+      onTackleCard={handleTackleCard}
     />
   );
 }

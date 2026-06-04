@@ -1,18 +1,26 @@
 import { useCallback, useReducer, useRef } from 'react';
 
-import { FeedScrollPosition } from '@/core/components/feed-pager/FeedScrollPosition';
+import {
+  FeedScrollPosition,
+  restoreFeedScrollPosition,
+} from '@/core/components/feed-pager/FeedScrollPosition';
 
-export function useFeedScrollPosition(feedSessionId: string) {
+export function useFeedScrollPosition(
+  feedSessionId: string,
+  resumeIndex = 0
+) {
   const trackedSessionIdRef = useRef<string | null>(null);
   const positionRef = useRef<FeedScrollPosition | null>(null);
+  const pagerInitialIndexRef = useRef(0);
   const [, bump] = useReducer((version) => version + 1, 0);
 
-  if (
-    trackedSessionIdRef.current !== feedSessionId ||
-    !positionRef.current
-  ) {
+  if (trackedSessionIdRef.current !== feedSessionId || !positionRef.current) {
     trackedSessionIdRef.current = feedSessionId;
-    positionRef.current = new FeedScrollPosition(feedSessionId);
+    pagerInitialIndexRef.current = resumeIndex;
+    positionRef.current = restoreFeedScrollPosition(
+      feedSessionId,
+      resumeIndex
+    );
   }
 
   const position = positionRef.current;
@@ -26,7 +34,7 @@ export function useFeedScrollPosition(feedSessionId: string) {
   );
 
   return {
-    initialIndex: position.getIndex(),
+    initialIndex: pagerInitialIndexRef.current,
     minimumIndex: position.getMinimumIndex(),
     onIndexChange,
   };

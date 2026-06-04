@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { app } from '../../app.js';
 import { clearSessions } from '../domain/session-store.js';
+import { clearTackles } from '../domain/tackle-store.js';
 
 describe('session API', () => {
   beforeEach(() => {
     clearSessions();
+    clearTackles();
   });
 
   it('GET /session returns first batch with sessionId and cursor', async () => {
