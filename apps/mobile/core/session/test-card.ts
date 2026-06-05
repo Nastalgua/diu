@@ -12,7 +12,8 @@ export function testCard(
   primarySource: TPrimarySource = {
     integration: 'fixture',
     sourceId: id,
-  }
+  },
+  contextSources: TCard['contextSources'] = []
 ): TCard {
   return {
     id,
@@ -23,5 +24,6 @@ export function testCard(
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
     primarySource,
+    contextSources,
   };
 }

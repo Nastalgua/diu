@@ -168,6 +168,61 @@ describe('FeedScreen', () => {
     expect(recordTackle).toHaveBeenCalledWith(cards[0].primarySource);
   });
 
+  test('tackling one card marks every other card with the same primary source as Tackling', () => {
+    const sharedPrimary = {
+      integration: 'github',
+      sourceId: 'pr-142',
+    };
+    const endItem = feedStack[feedStack.length - 1];
+    const stackWithSharedPrimary = [
+      {
+        ...cards[0],
+        id: 'dup-a',
+        title: 'Review PR #142 (copy A)',
+        primarySource: sharedPrimary,
+      },
+      {
+        ...cards[2],
+        id: 'dup-b',
+        title: 'Review PR #142 (copy B)',
+        primarySource: sharedPrimary,
+      },
+      endItem,
+    ];
+
+    mockUseSessionFeed.mockReturnValue({
+      sessionId: 'fake-session',
+      stack: stackWithSharedPrimary,
+      resumeIndex: 0,
+      isLoading: false,
+      error: null,
+      refresh: jest.fn().mockResolvedValue('fake-session'),
+      retry: jest.fn(),
+      prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle: jest.fn(),
+    });
+
+    render(<FeedScreen />);
+    layoutFeedViewport();
+
+    const tackleButton = within(screen.getByTestId('feed-pager')).getAllByRole(
+      'button',
+      { name: 'Tackle' }
+    )[0];
+    fireEvent.press(tackleButton);
+
+    scrollFeedPagerTo(PAGE_HEIGHT);
+
+    const secondPage = within(screen.getByTestId('feed-pager')).getAllByTestId(
+      'feed-page'
+    )[1];
+
+    expect(
+      within(secondPage).getByRole('button', { name: 'Tackling' })
+    ).toBeOnTheScreen();
+  });
+
   test('renders an action bar on each work card page', () => {
     render(<FeedScreen />);
     layoutFeedViewport();
@@ -310,6 +365,7 @@ describe('FeedScreen', () => {
           class: CardClass.SOFTWARE_ENGINEERING,
           classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
           primarySource: { integration: 'github', sourceId: 'pr-142' },
+          contextSources: [],
         },
       ],
       resumeIndex: 0,
@@ -329,6 +385,56 @@ describe('FeedScreen', () => {
     expect(
       screen.getByText('Auth refactor — 3 files changed, 2 approvals needed')
     ).toBeOnTheScreen();
+  });
+
+  test('renders context sources from server-authored multi-source cards', () => {
+    mockUseSessionFeed.mockReturnValue({
+      sessionId: 'server-session-abc',
+      stack: [
+        {
+          id: 'api-multi-source-1',
+          title: 'Review PR #142',
+          description: 'Auth refactor — 3 files changed, 2 approvals needed',
+          duration: 600,
+          focusRequired: FocusRequired.LOW,
+          class: CardClass.SOFTWARE_ENGINEERING,
+          classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
+          primarySource: { integration: 'github', sourceId: 'pr-142' },
+          contextSources: [
+            {
+              integration: 'google-calendar',
+              sourceId: 'standup-1',
+              contextNote: 'Standup starts in 20 min - likely discussion topic',
+            },
+            {
+              integration: 'slack',
+              sourceId: 'thread-88',
+              contextNote: 'Team raised auth rollout concerns in this thread',
+            },
+          ],
+        },
+      ],
+      resumeIndex: 0,
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+      retry: jest.fn(),
+      prefetchIfNeeded: jest.fn(),
+      updateResumeIndex: jest.fn(),
+      recordTackle: jest.fn(),
+    });
+
+    render(<FeedScreen />);
+    layoutFeedViewport();
+
+    expect(
+      screen.getByText('Standup starts in 20 min - likely discussion topic')
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByText('Team raised auth rollout concerns in this thread')
+    ).toBeOnTheScreen();
+    expect(screen.getByText('Google calendar')).toBeOnTheScreen();
+    expect(screen.getByText('Slack')).toBeOnTheScreen();
   });
 
   test('does not refresh when the Feed tab is pressed while another tab is active', async () => {
@@ -384,6 +490,7 @@ describe('FeedScreen', () => {
           class: CardClass.SOFTWARE_ENGINEERING,
           classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
           primarySource: { integration: 'github', sourceId: 'pr-142' },
+          contextSources: [],
         },
       ],
       resumeIndex: 0,

@@ -36,8 +36,10 @@ function FeedSessionStack({
   onTackleToggle,
 }: FeedSessionStackProps) {
   const pagerRef = useRef<FeedPagerHandle>(null);
-  const { initialIndex, minimumIndex, onIndexChange } =
-    useFeedScrollPosition(sessionId, resumeIndex);
+  const { initialIndex, minimumIndex, onIndexChange } = useFeedScrollPosition(
+    sessionId,
+    resumeIndex
+  );
   const [savedCardIds, setSavedCardIds] = useState<Set<string>>(
     () => new Set()
   );

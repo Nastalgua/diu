@@ -107,6 +107,21 @@ describe('FeedPager', () => {
     expect(screen.getByText('card-b')).toBeOnTheScreen();
   });
 
+  test('reports visible index while scrolling', () => {
+    const onVisibleIndexChange = jest.fn();
+    renderPager({ onVisibleIndexChange });
+
+    fireEvent.scroll(screen.getByTestId('feed-pager'), {
+      nativeEvent: {
+        contentOffset: { y: PAGE_HEIGHT * 0.55, x: 0 },
+        contentSize: { height: PAGE_HEIGHT * ITEMS.length, width: 375 },
+        layoutMeasurement: { height: PAGE_HEIGHT, width: 375 },
+      },
+    });
+
+    expect(onVisibleIndexChange).toHaveBeenCalledWith(1);
+  });
+
   test('does not use pull-to-refresh', () => {
     renderPager();
 

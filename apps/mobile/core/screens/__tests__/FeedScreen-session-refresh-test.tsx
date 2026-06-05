@@ -40,9 +40,9 @@ const mockSessionClient: SessionFeedClient = {
 };
 
 jest.mock('@/core/session/useSessionFeed', () => {
-  const actual = jest.requireActual<typeof import('@/core/session/useSessionFeed')>(
-    '@/core/session/useSessionFeed'
-  );
+  const actual = jest.requireActual<
+    typeof import('@/core/session/useSessionFeed')
+  >('@/core/session/useSessionFeed');
 
   return {
     ...actual,

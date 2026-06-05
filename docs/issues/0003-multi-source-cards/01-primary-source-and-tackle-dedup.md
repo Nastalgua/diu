@@ -14,12 +14,12 @@ Two primary sources match when both `integration` and `sourceId` are equal.
 
 ## Acceptance criteria
 
-- [ ] Shared types define `TPrimarySource` with `integration` and `sourceId`, plus an equality helper
-- [ ] `TCard` includes a required `primarySource` field
-- [ ] Session API accepts tackle POST with a primary source and persists it per calendar day
-- [ ] Session stack omits cards whose primary source was tackled today (including across cursor pages and session refresh within the same day)
-- [ ] Mobile records tackle using `card.primarySource` when the user taps Tackle
-- [ ] API and mobile tests cover dedup: tackling one card hides others with the same primary source for the day
+- [x] Shared types define `TPrimarySource` with `integration` and `sourceId`, plus an equality helper
+- [x] `TCard` includes a required `primarySource` field
+- [x] Session API accepts tackle POST with a primary source and persists it per calendar day
+- [x] Session stack omits cards whose primary source was tackled today (including across cursor pages and session refresh within the same day)
+- [x] Mobile records tackle using `card.primarySource` when the user taps Tackle
+- [x] API and mobile tests cover dedup: tackling one card hides others with the same primary source for the day
 
 ## Blocked by
 

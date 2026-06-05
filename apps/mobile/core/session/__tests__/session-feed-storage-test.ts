@@ -36,6 +36,7 @@ const sampleCard: TCard = {
   class: CardClass.GENERAL,
   classType: GeneralType.MEETING,
   primarySource: { integration: 'fixture', sourceId: 'api-1' },
+  contextSources: [],
 };
 
 const sampleStack: TFeedStackItem[] = [sampleCard];
