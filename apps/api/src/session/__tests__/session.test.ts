@@ -22,6 +22,18 @@ describe('session API', () => {
       title: 'Review PR #142',
       class: 'software-engineering',
       classType: 'pr-review-request',
+      primarySource: { integration: 'github', sourceId: 'pr-142' },
+      contextSources: [
+        {
+          integration: 'google-calendar',
+          sourceId: 'standup-9am',
+          contextNote: 'Starts in 20 min - likely discussion topic',
+        },
+      ],
+    });
+    expect(body.cards[1]).toMatchObject({
+      id: '2',
+      contextSources: [],
     });
     expect(body.hasMore).toBe(true);
     expect(body.cursor).toBe('2');

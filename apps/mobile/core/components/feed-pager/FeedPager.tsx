@@ -24,9 +24,13 @@ export type FeedPagerProps<T> = {
   initialIndex?: number;
   minimumIndex?: number;
   onIndexChange?: (index: number) => void;
+  onVisibleIndexChange?: (index: number) => void;
   renderPage: (item: T, index: number) => React.ReactNode;
   keyExtractor: (item: T, index: number) => string;
 };
+
+// Lower than React Native's "fast" (0.99) so swipes settle sooner.
+const FEED_PAGER_DECELERATION_RATE = 0.1;
 
 function indexFromOffset(
   offsetY: number,
@@ -46,6 +50,7 @@ function FeedPagerInner<T>(
     initialIndex = 0,
     minimumIndex = 0,
     onIndexChange,
+    onVisibleIndexChange,
     renderPage,
     keyExtractor,
   }: FeedPagerProps<T>,
@@ -53,7 +58,24 @@ function FeedPagerInner<T>(
 ) {
   const listRef = useRef<FlatList<T>>(null);
   const currentIndexRef = useRef(initialIndex);
+  const visibleIndexRef = useRef(initialIndex);
   const swipeFeedbackSentRef = useRef(false);
+
+  useEffect(() => {
+    visibleIndexRef.current = initialIndex;
+    onVisibleIndexChange?.(initialIndex);
+  }, [initialIndex, onVisibleIndexChange]);
+
+  const reportVisibleIndex = useCallback(
+    (offsetY: number) => {
+      const targetIndex = indexFromOffset(offsetY, pageHeight, items.length);
+      if (targetIndex === visibleIndexRef.current) return;
+
+      visibleIndexRef.current = targetIndex;
+      onVisibleIndexChange?.(targetIndex);
+    },
+    [items.length, onVisibleIndexChange, pageHeight]
+  );
 
   useEffect(() => {
     if (initialIndex <= 0 || pageHeight <= 0) return;
@@ -99,14 +121,22 @@ function FeedPagerInner<T>(
     notifyFeedSwipeStart();
   }, []);
 
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      reportVisibleIndex(event.nativeEvent.contentOffset.y);
+    },
+    [reportVisibleIndex]
+  );
+
   const handleScrollEnd = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       swipeFeedbackSentRef.current = false;
       const offsetY = event.nativeEvent.contentOffset.y;
+      reportVisibleIndex(offsetY);
       const targetIndex = indexFromOffset(offsetY, pageHeight, items.length);
       settleAtIndex(targetIndex);
     },
-    [items.length, pageHeight, settleAtIndex]
+    [items.length, pageHeight, reportVisibleIndex, settleAtIndex]
   );
 
   const advanceToNext = useCallback(() => {
@@ -134,7 +164,7 @@ function FeedPagerInner<T>(
       pagingEnabled
       snapToInterval={pageHeight}
       snapToAlignment="start"
-      decelerationRate="fast"
+      decelerationRate={FEED_PAGER_DECELERATION_RATE}
       disableIntervalMomentum
       showsVerticalScrollIndicator={false}
       getItemLayout={(_, index) => ({
@@ -143,6 +173,9 @@ function FeedPagerInner<T>(
         index,
       })}
       onScrollBeginDrag={handleScrollBeginDrag}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
+      keyboardShouldPersistTaps="handled"
       onMomentumScrollEnd={handleScrollEnd}
       onScrollEndDrag={handleScrollEnd}
     />

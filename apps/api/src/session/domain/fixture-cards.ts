@@ -20,6 +20,13 @@ export const fixtureCards: TCard[] = [
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
     primarySource: { integration: 'github', sourceId: 'pr-142' },
+    contextSources: [
+      {
+        integration: 'google-calendar',
+        sourceId: 'standup-9am',
+        contextNote: 'Starts in 20 min - likely discussion topic',
+      },
+    ],
   },
   {
     id: '2',
@@ -30,6 +37,7 @@ export const fixtureCards: TCard[] = [
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
     primarySource: { integration: 'google-calendar', sourceId: 'standup-9am' },
+    contextSources: [],
   },
   {
     id: '3',
@@ -40,6 +48,7 @@ export const fixtureCards: TCard[] = [
     class: CardClass.GENERAL,
     classType: GeneralType.NEEDS_REPLY,
     primarySource: { integration: 'gmail', sourceId: 'thread-john-doe' },
+    contextSources: [],
   },
   {
     id: '4',
@@ -50,6 +59,7 @@ export const fixtureCards: TCard[] = [
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
     primarySource: { integration: 'github', sourceId: 'pr-142' },
+    contextSources: [],
   },
   {
     id: '5',
@@ -60,6 +70,7 @@ export const fixtureCards: TCard[] = [
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
     primarySource: { integration: 'google-calendar', sourceId: '1on1-john' },
+    contextSources: [],
   },
 ];
 
@@ -81,6 +92,7 @@ const fixtureCardsDeckB: TCard[] = [
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
     primarySource: { integration: 'notion', sourceId: 'q2-roadmap' },
+    contextSources: [],
   },
   {
     id: 'b-2',
@@ -91,6 +103,7 @@ const fixtureCardsDeckB: TCard[] = [
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
     primarySource: { integration: 'github', sourceId: 'ci-flaky-main' },
+    contextSources: [],
   },
   {
     id: 'b-3',
@@ -101,6 +114,7 @@ const fixtureCardsDeckB: TCard[] = [
     class: CardClass.GENERAL,
     classType: GeneralType.NEEDS_REPLY,
     primarySource: { integration: 'figma', sourceId: 'nav-mock-comments' },
+    contextSources: [],
   },
   {
     id: 'b-4',
@@ -111,6 +125,7 @@ const fixtureCardsDeckB: TCard[] = [
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
     primarySource: { integration: 'google-calendar', sourceId: '1on1-alex' },
+    contextSources: [],
   },
   {
     id: 'b-5',
@@ -121,6 +136,7 @@ const fixtureCardsDeckB: TCard[] = [
     class: CardClass.GENERAL,
     classType: GeneralType.NEEDS_REPLY,
     primarySource: { integration: 'gmail', sourceId: 'inbox-starred' },
+    contextSources: [],
   },
 ];
 

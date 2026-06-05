@@ -21,6 +21,7 @@ export enum SoftwareEngineeringType {
 }
 
 import type { TPrimarySource } from './primary-source';
+import type { TContextSource } from './context-source';
 
 type CardClassType = GeneralType | SoftwareEngineeringType;
 
@@ -33,4 +34,5 @@ export type TCard = {
   class: CardClass;
   classType: CardClassType;
   primarySource: TPrimarySource;
+  contextSources: TContextSource[];
 };

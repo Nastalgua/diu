@@ -28,6 +28,7 @@ export const longCopyCard: TCard = {
   class: CardClass.GENERAL,
   classType: GeneralType.MEETING,
   primarySource: { integration: 'notion', sourceId: 'quarterly-update' },
+  contextSources: [],
 };
 
 export const cards: TCard[] = [
@@ -40,6 +41,13 @@ export const cards: TCard[] = [
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.ISSUE,
     primarySource: { integration: 'github', sourceId: 'pr-142' },
+    contextSources: [
+      {
+        integration: 'google-calendar',
+        sourceId: 'standup-9am',
+        contextNote: 'Standup starts in 20 min - likely discussion topic',
+      },
+    ],
   },
   longCopyCard,
   {
@@ -51,6 +59,7 @@ export const cards: TCard[] = [
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.PR_REVIEW_REQUEST,
     primarySource: { integration: 'github', sourceId: 'pr-143' },
+    contextSources: [],
   },
   {
     id: '3',
@@ -61,6 +70,7 @@ export const cards: TCard[] = [
     class: CardClass.SOFTWARE_ENGINEERING,
     classType: SoftwareEngineeringType.PR_READY_TO_MERGE,
     primarySource: { integration: 'github', sourceId: 'pr-144' },
+    contextSources: [],
   },
   {
     id: '4',
@@ -71,6 +81,7 @@ export const cards: TCard[] = [
     class: CardClass.GENERAL,
     classType: GeneralType.MEETING,
     primarySource: { integration: 'google-calendar', sourceId: '1on1-john' },
+    contextSources: [],
   },
   {
     id: '5',
@@ -81,6 +92,7 @@ export const cards: TCard[] = [
     class: CardClass.GENERAL,
     classType: GeneralType.NEEDS_REPLY,
     primarySource: { integration: 'gmail', sourceId: 'thread-john-doe' },
+    contextSources: [],
   },
 ];
 

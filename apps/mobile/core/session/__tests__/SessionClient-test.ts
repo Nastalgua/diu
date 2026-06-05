@@ -19,6 +19,7 @@ const mockSessionPage: TSessionPage = {
       class: CardClass.GENERAL,
       classType: GeneralType.MEETING,
       primarySource: { integration: 'fixture', sourceId: 'api-1' },
+      contextSources: [],
     },
   ],
   cursor: '1',
@@ -63,6 +64,7 @@ describe('SessionClient', () => {
           class: CardClass.GENERAL,
           classType: GeneralType.MEETING,
           primarySource: { integration: 'fixture', sourceId: 'api-2' },
+          contextSources: [],
         },
       ],
       cursor: '2',
@@ -94,6 +96,39 @@ describe('SessionClient', () => {
     );
     expect(page.cards[0].id).toBe('api-2');
     expect(page.hasMore).toBe(false);
+  });
+
+  test('normalizes omitted contextSources to an empty array', async () => {
+    const pageWithoutContext = {
+      sessionId: 'server-session-abc',
+      cards: [
+        {
+          id: 'api-1',
+          title: 'Server-authored card',
+          description: 'From the session API',
+          duration: 600,
+          focusRequired: FocusRequired.MEDIUM,
+          class: CardClass.GENERAL,
+          classType: GeneralType.MEETING,
+          primarySource: { integration: 'fixture', sourceId: 'api-1' },
+        },
+      ],
+      cursor: null,
+      hasMore: false,
+    };
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => pageWithoutContext,
+    });
+    const client = new SessionClient({
+      baseUrl: 'http://localhost:3000',
+      fetch: fetchMock,
+      now: () => FIXED_NOW,
+    });
+
+    const page = await client.createSession();
+
+    expect(page.cards[0].contextSources).toEqual([]);
   });
 
   test('recordTackle POSTs primary source with calendar day header', async () => {
